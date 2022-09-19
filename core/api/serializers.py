@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from .models import *
+from api.models import Customer
 
 class CustomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
-        fields = ['pk', 'name', 'email', 'created']
+        fields = ('pk', 'name', 'email', 'created')

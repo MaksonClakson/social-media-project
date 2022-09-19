@@ -1,29 +1,38 @@
 from django.shortcuts import render
-from .models import *
-from rest_framework import generics
-from .serializers import *
+from api.models import Customer
+from rest_framework import viewsets
+from rest_framework import mixins
+from api.serializers import CustomSerializer
 
-class CustomerCreate(generics.CreateAPIView):
+class CustomerAllViewSet(mixins.ListModelMixin,
+        mixins.CreateModelMixin,
+        viewsets.GenericViewSet):
     # API endpoint that allows creation of a new customer
-    queryset = Customer.objects.all(),
     serializer_class = CustomSerializer
+    queryset = Customer.objects.all()
 
-class CustomerList(generics.ListAPIView):
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+    
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+class CustomerViewSet(mixins.RetrieveModelMixin,
+        mixins.UpdateModelMixin,
+        mixins.DestroyModelMixin,
+        viewsets.GenericViewSet):
     # API endpoint that allows customer to be viewed
     queryset = Customer.objects.all()
     serializer_class = CustomSerializer
 
-class CustomerDetail(generics.RetrieveAPIView):
-    # API endpoint that returns a single customer by pk
-    queryset = Customer.objects.all()
-    serializer_class = CustomSerializer
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
 
-class CustomerUpdate(generics.RetrieveUpdateAPIView):
-    # API endpoint that allows a customer record to be updated
-    queryset = Customer.objects.all()
-    serializer_class = CustomSerializer
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
 
-class CustomerDelete(generics.RetrieveDestroyAPIView):
-    # API endpoint that allows a customer record to be updated
-    queryset = Customer.objects.all()
-    serializer_class = CustomSerializer
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
