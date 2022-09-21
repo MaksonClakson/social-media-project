@@ -44,7 +44,7 @@ RUN groupadd -g "${GID}" -r web \
   && chown web:web '/var/www/django/static' '/var/www/django/media'
 
 # Copy only requirements to cache them in docker layer
-COPY --chown=web:web poetry-project/poetry.lock poetry-project/pyproject.toml .env /code/
+COPY --chown=web:web poetry-project/poetry.lock poetry-project/pyproject.toml /code/
 
 # Project initialization:
 # RUN --mount=type=cache,target="$POETRY_CACHE_DIR" \

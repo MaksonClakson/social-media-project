@@ -2,6 +2,14 @@ version: '3.3'
 
 services:
   web:
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=${DEBUG}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
     build:
       context: .
     ports:
@@ -12,8 +20,14 @@ services:
       - postgres
 
   postgres:
-    image: postgres:12-alpine
     container_name: postgres
+    image: postgres:12-alpine
     restart: always
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
     ports: 
       - '5432:5432'
+    # volumes:
+    #   - /var/run/postgresql:/var/run/postgresql
