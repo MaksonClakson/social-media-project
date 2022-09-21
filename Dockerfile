@@ -30,8 +30,6 @@ RUN apt-get update && apt-get upgrade -y \
   && apt-get install --no-install-recommends -y \
     curl \
   # Installing `poetry` package manager:
-  # https://github.com/python-poetry/poetry
-  && pip install -U pip \
   && curl -sSL 'https://install.python-poetry.org' | python - \
   && poetry --version
 
@@ -51,13 +49,11 @@ COPY --chown=web:web poetry-project/poetry.lock poetry-project/pyproject.toml .e
 # Project initialization:
 # RUN --mount=type=cache,target="$POETRY_CACHE_DIR" \
 # Poetry will not create a new virtual environment
-RUN poetry version
-RUN poetry run pip install -U pip
-RUN poetry config virtualenvs.create $POETRY_VIRTUALENVS_CREATE
-# RUN poetry install \
-#     $(if [ "$DJANGO_ENV" = 'production' ]; then echo '--no-dev'; fi) \
-#     --no-interaction --no-ansi
-RUN poetry install -vvv --no-dev --no-interaction --no-ansi --no-root
+RUN poetry run pip install -U pip \
+  && poetry config virtualenvs.create $POETRY_VIRTUALENVS_CREATE \
+  && poetry install \
+    $(if [ "$DJANGO_ENV" = 'production' ]; then echo '--no-dev'; fi) \
+    --no-interaction --no-ansi --no-root
 
 # Run this script as an entry point:
 COPY ./scripts/entrypoint.sh /docker-entrypoint.sh
