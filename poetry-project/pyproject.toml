@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "poetry_project"}]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 Django = "^4.1.1"
 djangorestframework = "^3.13.1"
 psycopg2-binary = "^2.9.3"
@@ -15,5 +15,6 @@ python-dotenv = "^0.21.0"
 
 
 [build-system]
-requires = ["poetry-core"]
+# requires = ["poetry-core"]
+requires = ["poetry>=1.2"]
 build-backend = "poetry.core.masonry.api"
