@@ -2,6 +2,9 @@ version: '3.3'
 
 services:
   web:
+    container_name: web
+    build:
+      context: .
     environment:
       - DB_HOST=${DB_HOST}
       - DB_NAME=${DB_NAME}
@@ -10,10 +13,8 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - DEBUG=${DEBUG}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
-    build:
-      context: .
     ports:
-      - "8000:8000"
+      - '8000:8000'
     volumes:
       - ./core:/app/web
     depends_on:
@@ -24,9 +25,9 @@ services:
     image: postgres:12-alpine
     restart: always
     environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports: 
       - '5432:5432'
     # volumes:
