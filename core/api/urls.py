@@ -5,3 +5,4 @@ router = routers.SimpleRouter()
 router.register(r'customers', views.CustomerAllViewSet)
 router.register(r'customer', views.CustomerViewSet)
 urlpatterns = router.urls
+print(urlpatterns)

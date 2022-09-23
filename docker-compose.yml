@@ -1,0 +1,26 @@
+version: '3.3'
+
+services:
+  web:
+    container_name: web
+    build:
+      context: .
+    env_file:
+      - .env
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./core:/app/web
+    depends_on:
+      - postgres
+
+  postgres:
+    container_name: postgres
+    image: postgres:12-alpine
+    restart: always
+    env_file:
+      - .env
+    ports: 
+      - '30000:5432'
+    # volumes:
+    #   - /var/run/postgresql:/var/run/postgresql
