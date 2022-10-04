@@ -1,26 +1,31 @@
 version: '3.3'
 
 services:
+  # django core app
   web:
     container_name: web
     build:
       context: .
+    restart: on-failure
+    environment:
+      - DB_HOST=${POSTGRES_HOST}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASS=${POSTGRES_PASSWORD}
     env_file:
       - .env
     ports:
       - '8000:8000'
     volumes:
-      - ./core:/app/web
+      - ./core:/code
     depends_on:
       - postgres
 
+  # database
   postgres:
     container_name: postgres
     image: postgres:12-alpine
     restart: always
     env_file:
       - .env
-    ports: 
+    ports:
       - '30000:5432'
-    # volumes:
-    #   - /var/run/postgresql:/var/run/postgresql

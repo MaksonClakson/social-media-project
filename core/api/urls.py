@@ -1,8 +1,12 @@
-from api import views
 from rest_framework import routers
 
+from api import views
+
 router = routers.SimpleRouter()
-router.register(r'customers', views.CustomerAllViewSet)
-router.register(r'customer', views.CustomerViewSet)
+router.register(r'tags', views.TagAllViewSet)
+router.register(r'tags', views.TagViewSet)
+router.register(r'pages', views.PageAllViewSet)
+router.register(r'pages', views.PageViewSet)
+router.register(r'posts', views.PostAllViewSet)
+router.register(r'posts', views.PostViewSet)
 urlpatterns = router.urls
-print(urlpatterns)

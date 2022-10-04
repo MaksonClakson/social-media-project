@@ -20,7 +20,8 @@ ENV DJANGO_ENV=${DJANGO_ENV} \
 EXPOSE 8000
 
 # System deps:
-RUN apt-get update && apt-get upgrade -y \
+RUN \
+  apt-get update && apt-get upgrade -y \
   && apt-get install --no-install-recommends -y \
     curl \
   # Installing 'poetry' package manager:
