@@ -7,10 +7,12 @@ from api.services.post_service import post_create_service, post_update_service
 class PostSerializer(serializers.ModelSerializer):
     page = serializers.StringRelatedField()
     reply_to = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
+    likes = serializers.StringRelatedField(many=True, required=False)
 
     class Meta:
         model = Post
-        fields = ('page', 'content', 'reply_to', 'created_at', 'updated_at',)
+        fields = ('pk', 'page', 'content', 'reply_to',
+                  'likes', 'created_at', 'updated_at',)
 
 
 class CreatePostSerializer(serializers.ModelSerializer):

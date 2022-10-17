@@ -7,7 +7,7 @@ from api.services.tag_service import tag_create_service, tag_update_service
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('name', 'pages',)
+        fields = ('pk', 'name', 'pages',)
 
     def create(self, validated_data):
         return tag_create_service(validated_data)

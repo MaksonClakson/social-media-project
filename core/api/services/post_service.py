@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.db import connection, reset_queries
+from rest_framework import status
 
 from api.models import Post
 
@@ -32,3 +33,15 @@ def post_retrieve_service(id: int):
 
 def post_delete_service(instance):
     instance.delete()
+
+
+def like_post_service(request, post):
+    # if post.page.is
+
+    if post.likes.filter(pk=request.user.id).exists():
+        post.likes.remove(request.user)
+        msg = "Unliked"
+    else:
+        post.likes.add(request.user)
+        msg = "Liked"
+    return msg, status.HTTP_200_OK
