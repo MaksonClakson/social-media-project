@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.db import connection, reset_queries
 from django.db.models import Q
 from rest_framework import status
+from api import s3_service
 
 from itertools import chain
 
@@ -47,7 +48,11 @@ def registrate(data):
 
 
 def update_avatar(user_pk, data):
-    user = get_object_or_404(get_user_model().objects, )
+    user = get_object_or_404(get_user_model().objects, pk=user_pk)
+    print("image ---------" + str(type(data)))
+    print("image content ---------" + data.content_type)
+    print("image format ---------" + format(data.content_type))
+    response, _status = s3_service.upload_image(data, user_pk)
     user.image_path = data['image_path']
     return "Image path has been updated", status.HTTP_200_OK
 

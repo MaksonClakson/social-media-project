@@ -7,6 +7,11 @@ from django.db import connection, reset_queries
 from django.db.models import Q
 from rest_framework import status
 from rest_framework.exceptions import APIException, ParseError
+from api import s3_service
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 
 from api.models import Tag, Page, Post
 from core.producer import CommandTypes, CONTAINER_MESSAGES_IP
@@ -41,6 +46,15 @@ def page_update(instance, validated_data):
 
 
 def page_retrieve(id: int):
+    s3_service.main()
+    response = s3_service.list_buckets()
+    print("1----------" + str(response))
+
+    file_name = '/Users/abhinav.dumbre/hands-on-cloud/localstack-boto3/s3/files/hands-on-cloud.txt'
+    object_name = 'hands-on-cloud.txt'
+    bucket = os.getenv("AWS_BUCKET_NAME")
+    response2 = s3_service.upload_file(file_name, bucket, object_name)
+    print("2----------" + str(response2))
     return get_object_or_404(Page, pk=id)
 
 

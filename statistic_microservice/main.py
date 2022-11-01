@@ -47,10 +47,9 @@ def create_page(page_id: int = Body(), user_id: int = Body(), page_name: str = B
 def update_page(page_id: int = Body(), user_id: int = Body(), page_name: str = Body()):
     """
     Perfroms updating page name of the page at the 'Pages' table
-    Request body:
-        :page_id - id of the page
-        :user_id - id of the current authenticated user
-        :page_name - new name of the page
+    :page_id - id of the page
+    :user_id - id of the current authenticated user
+    :page_name - new name of the page
     """
     content, _status = services.update_page(page_id, user_id, page_name)
     if _status != status.HTTP_200_OK:

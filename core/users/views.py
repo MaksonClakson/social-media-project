@@ -119,7 +119,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
         serializer = self.get_serializer_class()(data=request.data)
         if not serializer.is_valid():
             return Response(serializer._errors, status=status.HTTP_400_BAD_REQUEST)
-        msg, _status = services.update_avatar(pk, request.data)
+        msg, _status = services.update_avatar(pk, request.FILES.get('image_uploaded'))
         return Response({"message": msg}, _status, request.user)
 
     @action(detail=True, methods=['POST'])
