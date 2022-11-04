@@ -1,3 +1,6 @@
+import requests
+import json
+
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.db import connection, reset_queries
@@ -6,6 +9,7 @@ from rest_framework import status
 from rest_framework.exceptions import APIException, ParseError
 
 from api.models import Tag, Page, Post
+from core.producer import CommandTypes, CONTAINER_MESSAGES_IP
 
 # reset_queries()
 # print(connection.queries)
@@ -20,6 +24,10 @@ def page_create(validated_data, current_user):
     validated_data.pop('owner')
     page = Page.objects.create(owner=current_user, **validated_data)
     page.tags.set(tags_data)
+    response = requests.post(
+        f'http://{CONTAINER_MESSAGES_IP}/{CommandTypes.CREATE_PAGE}', data=json.dumps({'page_id': page.pk, 'user_id': current_user.pk, 'page_name': page.title}))
+    if str(response.status_code).startswith('4') or str(response.status_code).startswith('5'):
+            return "Error with statistic microservice", response.status_code
     return page
 
 
@@ -27,9 +35,8 @@ def page_update(instance, validated_data):
     instance.name = validated_data["name"]
     instance.uuid = validated_data["uuid"]
     instance.description = validated_data["description"]
-    instance.tags.set(validated_data["tags"])
     instance.is_private = validated_data["is_private"]
-    instance.save(update_fields=['name', 'uuid', 'description', 'tags', 'is_private'])
+    instance.save(update_fields=['name', 'uuid', 'description', 'is_private'])
     return instance
 
 
@@ -66,9 +73,16 @@ def subscribe(page_pk, user):
         if page.follow_requests.filter(pk=user.pk).exists():
             return "You have already sent follow request to this page", status.HTTP_400_BAD_REQUEST
         page.follow_requests.add(user)
+        response, _status = requests.post(
+            f'http://{CONTAINER_MESSAGES_IP}/{CommandTypes.NEW_PAGE_FOLLOW_REQUEST}/', data=json.dumps({'page_id': page.pk}))
+        if _status != status.HTTP_200_OK:
+            return response, _status
         return "You have sent follow request to this page", status.HTTP_200_OK
     else:
-        page.followers.add(user)
+        response = requests.post(
+            f'http://{CONTAINER_MESSAGES_IP}/{CommandTypes.NEW_PAGE_FOLLOWER}/', data=json.dumps({'page_id': page.pk}))
+        if str(response.status_code).startswith('4') or str(response.status_code).startswith('5'):
+            return "Error with statistic microservice", response.status_code
         return "You have subscribed to this page", status.HTTP_200_OK
 
 
@@ -82,9 +96,17 @@ def unsubscribe(page_pk, user):
         if not page.follow_requests.filter(pk=user.pk).exists():
             return "There's no follow request to undo", status.HTTP_400_BAD_REQUEST
         page.follow_requests.remove(user)
+        response = requests.post(
+            f'http://{CONTAINER_MESSAGES_IP}/{CommandTypes.UNDO_FOLLOW_REQUEST}/', data=json.dumps({'page_id': page.pk}))
+        if str(response.status_code).startswith('4') or str(response.status_code).startswith('5'):
+            return "Error with statistic microservice", response.status_code
         return "Undo sending follow request", status.HTTP_200_OK
     else:
         page.followers.remove(user)
+        response = requests.post(
+            f'http://{CONTAINER_MESSAGES_IP}/{CommandTypes.UNDO_PAGE_FOLLOWER}/', data=json.dumps({'page_id': page.pk}))
+        if str(response.status_code).startswith('4') or str(response.status_code).startswith('5'):
+            return "Error with statistic microservice", response.status_code
         return "Unsubscribed", status.HTTP_200_OK
 
 
@@ -164,3 +186,7 @@ def find_pages(_name, _uuid, _tag):
             Q(name__contains=_name) & Q(uuid__contains=_uuid)
         )
     return pages
+
+
+def get_stat(page):
+    return

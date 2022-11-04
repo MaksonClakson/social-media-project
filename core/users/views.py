@@ -21,11 +21,14 @@ class UserAllViewSet(mixins.ListModelMixin,
     serializer_classes = {
         'list': UserSerializer,
         'create': CreateUserSerializer,
-        'registrate': RegistrateUserSerializer}
+        'registrate': RegistrateUserSerializer,
+        'find_user': UserSerializer,
+    }
     permissions = {
         'list': (AllowAny,),
         'create': (IsAdmin | IsModerator,),
         'registrate': (IsNotAuthenticated,),
+        'find_user': (AllowAny,),
     }
     queryset = get_user_model().objects.all()
 
@@ -50,6 +53,19 @@ class UserAllViewSet(mixins.ListModelMixin,
             return Response(serializer._errors, status=status.HTTP_400_BAD_REQUEST)
         msg, _status = services.registrate(request.data)
         return Response({"message": msg}, _status)
+
+    @action(detail=False, methods=['GET'])
+    def find_user(self, request, pk=None):
+        """
+        Provides finding user by username, title
+        """
+        username = request.query_params.get('username')
+        title = request.query_params.get('title')
+        if username == None:
+            return Response("Must be specified fields", status.HTTP_400_BAD_REQUEST)
+        queryset = services.find_user(username, title)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class UserViewSet(mixins.RetrieveModelMixin,

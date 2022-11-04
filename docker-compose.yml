@@ -3,14 +3,10 @@ version: '3.3'
 services:
   # django core app
   web:
-    container_name: web
+    container_name: web_innotter
     build:
-      context: .
+      context: ./core
     restart: on-failure
-    environment:
-      - DB_HOST=${POSTGRES_HOST}
-      - DB_USER=${POSTGRES_USER}
-      - DB_PASS=${POSTGRES_PASSWORD}
     env_file:
       - .env
     ports:
@@ -22,10 +18,47 @@ services:
 
   # database
   postgres:
-    container_name: postgres
+    container_name: postgres_innotter
     image: postgres:12-alpine
     restart: always
-    env_file:
-      - .env
+    environment:
+      POSTGRES_HOST: ${DB_HOST}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - '30000:5432'
+
+  # statistic microservice
+  statistic_service:
+    container_name: statistic_service_innotter
+    build:
+      context: ./statistic_microservice
+    env_file:
+      - .env
+    volumes:
+      - ./statistic_microservice/:/app/
+    expose:
+      - '8001'
+    ports:
+      - '8001:8000'
+    depends_on:
+      - localstack
+
+  # local dynamodb and s3
+  localstack:
+    container_name: localstack_main
+    image: localstack/localstack
+    restart: on-failure
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=dynamodb
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"

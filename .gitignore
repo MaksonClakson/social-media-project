@@ -58,3 +58,11 @@ coverage.xml
 
 # example database
 drf_example
+
+# statustic_microservice localstack folder
+volume
+
+# localstack folder
+.localstack
+
+.qt_for_python

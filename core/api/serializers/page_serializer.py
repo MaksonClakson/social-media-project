@@ -1,9 +1,11 @@
 from django.forms import BooleanField, IntegerField
+import requests
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
 from api.models import Page, Tag
 from api.services.page_service import page_create, page_update
+from core.producer import CommandTypes, CONTAINER_MESSAGES_IP
 
 
 class PageSerializer(serializers.ModelSerializer):
@@ -37,7 +39,8 @@ class CreatePageSerializer(serializers.ModelSerializer):
                   'tags', 'image', 'is_private', 'owner', )
 
     def create(self, validated_data):
-        return page_create(validated_data, self.context["request"].user)
+        page = page_create(validated_data, self.context["request"].user)
+        return page
 
 
 class UpdatePageSerializer(serializers.ModelSerializer):
@@ -46,7 +49,8 @@ class UpdatePageSerializer(serializers.ModelSerializer):
         fields = ('name', 'uuid', 'description', 'image', 'is_private', )
 
     def update(self, instance, validated_data):
-        return page_update(instance, validated_data)
+        page = page_update(instance, validated_data)
+        return page
 
 
 class FollowRequestActionSerializer(serializers.Serializer):

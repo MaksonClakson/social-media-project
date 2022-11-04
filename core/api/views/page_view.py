@@ -1,22 +1,24 @@
+from datetime import datetime
+import json
+import requests
+import asyncio
 from rest_framework import viewsets
 from rest_framework import mixins
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import AnonymousUser
 from django.db.models.query import QuerySet
 from django.contrib.auth import get_user_model
 from rest_framework.decorators import action
 from rest_framework import status
 
-from api.models import Tag, Page, Post
-from api.serializers.tag_serializer import TagSerializer
+from api.models import Page
 from api.serializers.page_serializer import FollowRequestActionSerializer, PageSerializer, CreatePageSerializer, UpdatePageSerializer, PageAnonymousSerializer, AllFollowRequestActionSerializer, TagNameSerializer, BlockSerializer
-from api.serializers.post_serializer import PostSerializer, CreatePostSerializer, UpdatePostSerializer
-from users.serializers import UserNameSerializer
+from api.serializers.post_serializer import PostSerializer
 from api.services import page_service as services
-from users.permissions import IsOwnerOrAdminOrReadOnly, IsPageOwner, IsPostOwnerOrAdminOrReadOnly, IsPostOwner, IsAdmin, IsModerator, IsUser, IsPageRequestsOwner
-
-from rest_framework_nested import routers
+from users.serializers import UserNameSerializer
+from users.permissions import IsPageOwner, IsAdmin, IsModerator, IsUser
+from core.producer import CommandTypes, CONTAINER_MESSAGES_IP
 
 
 class PageAllViewSet(mixins.ListModelMixin,
@@ -26,11 +28,12 @@ class PageAllViewSet(mixins.ListModelMixin,
     Implements Create page and Get all pages
     '''
     # permission_classes = (IsAuthenticated,)
-    serializer_classes = {'list': PageSerializer,
-                          'create': CreatePageSerializer,
-                          'mypages': PageSerializer,
-                          'find_pages': PageSerializer,
-                          }
+    serializer_classes = {
+        'list': PageSerializer,
+        'create': CreatePageSerializer,
+        'mypages': PageSerializer,
+        'find_pages': PageSerializer,
+    }
     permissions = {
         'list': (AllowAny,),
         'create': (IsUser,),
@@ -103,7 +106,7 @@ class PageViewSet(mixins.RetrieveModelMixin,
         'retrieve': (AllowAny,),
         'destroy': (IsPageOwner,),
         'myposts': (IsPageOwner,),
-        'subscribe': (IsUser ,),
+        'subscribe': (IsUser,),
         'follow_requests': (IsPageOwner,),
         'follow_request_action': (IsPageOwner,),
         'add_tag': (IsPageOwner,),
@@ -132,6 +135,13 @@ class PageViewSet(mixins.RetrieveModelMixin,
     def perform_destroy(self, instance):
         services.page_delete(instance)
 
+    def perform_update(self, serializer):
+        serializer.save()
+        response = requests.delete(
+            f'http://{CONTAINER_MESSAGES_IP}/{CommandTypes.DELETE_PAGE}', data=json.dumps({'page_id': self.get_object().pk, 'user_id': self.request.user.pk, 'page_name': self.get_object().name}))
+        if str(response.status_code).startswith('4') or str(response.status_code).startswith('5'):
+            return "Error with statistic microservice", response.status_code
+
     @action(detail=True, methods=['GET'])
     def myposts(self, request, pk=None):
         """
@@ -146,7 +156,7 @@ class PageViewSet(mixins.RetrieveModelMixin,
     @action(detail=True, methods=['POST'])
     def subscribe(self, request, pk=None):
         """
-        Provid subscribing on public page or sending follow request to private page
+        Provide subscribing on public page or sending follow request to private page
         """
         msg, _status = services.subscribe(pk, request.user)
         return Response({"message": msg}, _status)
@@ -154,7 +164,7 @@ class PageViewSet(mixins.RetrieveModelMixin,
     @action(detail=True, methods=['POST'])
     def unsubscribe(self, request, pk=None):
         """
-        Provid unsubscribing on public page or undo sending follow request to private page
+        Provide unsubscribing on public page or undo sending follow request to private page
         """
         msg, _status = services.unsubscribe(pk, request.user)
         return Response({"message": msg}, _status)
@@ -234,3 +244,11 @@ class PageViewSet(mixins.RetrieveModelMixin,
         """
         msg, _status = services.unblock(self.get_object())
         return Response({"message": msg}, _status)
+
+    @action(detail=True, methods=['POST'])
+    def get_stat(self, request, pk=None):
+        """
+        Return statistic from microservice regarding certain page
+        """
+        msg = services.get_stat(self.get_object())
+        return Response({"message": msg})

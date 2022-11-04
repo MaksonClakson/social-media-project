@@ -75,3 +75,13 @@ def mynews_posts(user):
     posts = Post.objects.filter(
         Q(page__in=my_pages) | Q(page__in=followed_pages))[:20]
     return posts
+
+
+def find_user(_username, _title):
+    if not _title:
+        user = get_user_model().objects.filter(username__contains=_username)
+    else:
+        user = get_user_model().objects.filter(
+            Q(username__contains=_username) & Q(title__contains=_title)
+        )
+    return user
