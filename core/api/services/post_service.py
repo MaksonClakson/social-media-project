@@ -28,7 +28,6 @@ def post_create_service(validated_data, user):
     for follower in page_data.followers.all():
         response = notify_follower_about_new_post(
             page_data.name, post.content, follower.email)
-        print(f"{response.__dict__= }")
 
     return post
 

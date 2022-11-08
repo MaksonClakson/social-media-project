@@ -69,7 +69,6 @@ class RegistrateUserSerializer(serializers.ModelSerializer):
 
 class BlockUserSerializer(serializers.Serializer):
     to_block = serializers.BooleanField()
-    # image_path = serializers.URLField(max_length=200)
 
 
 class UpdateAvatarSerializer(serializers.Serializer):

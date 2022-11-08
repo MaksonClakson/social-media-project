@@ -25,12 +25,13 @@ def user_update_service(instance, validated_data):
     instance.password = validated_data["password"]
     instance.email = validated_data["email"]
     instance.title = validated_data["title"]
-    instance.save(update_fields=['username', 'password', 'email', 'image_path', 'title'])
+    instance.save(update_fields=['username',
+                  'password', 'email', 'image_path', 'title'])
     return instance
+
 
 def verify_email(email):
     response = ses_client.verify_email_identity(
-        # EmailAddress=email
         EmailAddress="max2121vas@gmail.com"
     )
     return response
