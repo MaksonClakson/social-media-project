@@ -142,3 +142,11 @@ class UserViewSet(mixins.RetrieveModelMixin,
         queryset = services.mynews_posts(self.get_object())
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['POST'])
+    def verify_email(self, request, pk=None):
+        """
+        Verify user's email by sending message throw AWS SES
+        """
+        response = services.verify_email(request.user.email)
+        return Response({"message": response}, status=status.HTTP_200_OK)

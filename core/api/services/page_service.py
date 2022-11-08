@@ -1,23 +1,19 @@
-import requests
 import json
+import os
+import requests
 
+from dotenv import load_dotenv
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from django.db import connection, reset_queries
 from django.db.models import Q
 from rest_framework import status
-from rest_framework.exceptions import APIException, ParseError
+from rest_framework.exceptions import NotFound, APIException, ParseError
+
 from api import s3_service
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
-
 from api.models import Tag, Page, Post
 from core.producer import CommandTypes, CONTAINER_MESSAGES_IP
 
-# reset_queries()
-# print(connection.queries)
+load_dotenv()
 
 
 def page_list():
@@ -46,15 +42,9 @@ def page_update(instance, validated_data):
 
 
 def page_retrieve(id: int):
-    s3_service.main()
-    response = s3_service.list_buckets()
-    print("1----------" + str(response))
-
-    file_name = '/Users/abhinav.dumbre/hands-on-cloud/localstack-boto3/s3/files/hands-on-cloud.txt'
-    object_name = 'hands-on-cloud.txt'
-    bucket = os.getenv("AWS_BUCKET_NAME")
-    response2 = s3_service.upload_file(file_name, bucket, object_name)
-    print("2----------" + str(response2))
+    page = get_object_or_404(Page, pk=id)
+    if page.is_permanent_block or page.unblock_date != None:
+        raise NotFound(detail="Page is blocked", code=None)
     return get_object_or_404(Page, pk=id)
 
 
@@ -202,5 +192,19 @@ def find_pages(_name, _uuid, _tag):
     return pages
 
 
-def get_stat(page):
-    return
+def update_image(page_pk, data):
+    page = get_object_or_404(Page, pk=page_pk)
+    response, _status = s3_service.upload_image(data, page_pk)
+    if _status is not status.HTTP_200_OK:
+        return response, _status
+    page.image = response
+    page.save(update_fields=['image'])
+    return "Image path has been updated", status.HTTP_200_OK
+
+
+def get_stat(page, current_user):
+    response = requests.post(
+        f'http://{CONTAINER_MESSAGES_IP}/{CommandTypes.GET_ALL_STAT}', data=json.dumps({'page_id': page.pk, 'user_id': current_user.pk}))
+    if str(response.status_code).startswith('4') or str(response.status_code).startswith('5'):
+        return "Error with statistic microservice", response.status_code
+    return response, status.HTTP_200_OK

@@ -4,6 +4,7 @@ from django.db import connection, reset_queries
 from django.db.models import Q
 from rest_framework import status
 from api import s3_service
+from api.aws import ses_client
 
 from itertools import chain
 
@@ -23,10 +24,16 @@ def user_update_service(instance, validated_data):
     instance.username = validated_data["username"]
     instance.password = validated_data["password"]
     instance.email = validated_data["email"]
-    instance.image_path = validated_data["image_path"]
     instance.title = validated_data["title"]
     instance.save(update_fields=['username', 'password', 'email', 'image_path', 'title'])
     return instance
+
+def verify_email(email):
+    response = ses_client.verify_email_identity(
+        # EmailAddress=email
+        EmailAddress="max2121vas@gmail.com"
+    )
+    return response
 
 
 def user_retrieve_service(id: int):
@@ -49,11 +56,11 @@ def registrate(data):
 
 def update_avatar(user_pk, data):
     user = get_object_or_404(get_user_model().objects, pk=user_pk)
-    print("image ---------" + str(type(data)))
-    print("image content ---------" + data.content_type)
-    print("image format ---------" + format(data.content_type))
     response, _status = s3_service.upload_image(data, user_pk)
-    user.image_path = data['image_path']
+    if _status is not status.HTTP_200_OK:
+        return response, _status
+    user.image_path = response
+    user.save(update_fields=['image_path'])
     return "Image path has been updated", status.HTTP_200_OK
 
 

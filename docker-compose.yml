@@ -53,12 +53,13 @@ services:
     ports:
       - "4566:4566"
     environment:
-      - SERVICES=dynamodb, s3
+      - SERVICES=dynamodb, s3, ses
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
       - DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - DATA_DIR=${LOCALSTACK_DATA_DIR:-/tmp/localstack/data}
       - DOCKER_HOST=unix:///var/run/docker.sock
     volumes:
-      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - ./localstack:/tmp/localstack
       - "/var/run/docker.sock:/var/run/docker.sock"

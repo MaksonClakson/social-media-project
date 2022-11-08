@@ -1,3 +1,4 @@
+from rest_framework import status
 from rest_framework import serializers
 
 from api.models import Post
@@ -22,7 +23,11 @@ class CreatePostSerializer(serializers.ModelSerializer):
         fields = ('page', 'content', 'reply_to')
 
     def create(self, validated_data):
-        return post_create_service(validated_data)
+        response, _status = post_create_service(
+            validated_data, self['context'].user)
+        if _status is not status.HTTP_201_CREATED:
+            raise serializers.ValidationError(response)
+        return response
 
 
 class UpdatePostSerializer(serializers.ModelSerializer):

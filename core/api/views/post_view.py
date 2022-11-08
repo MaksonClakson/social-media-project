@@ -59,8 +59,6 @@ class PostViewSet(mixins.RetrieveModelMixin,
     '''
     Implements Retrieve, Update, Destroy post
     '''
-    # permission_classes = (IsPostOwnerOrAdminOrReadOnly, )
-    # permission_classes = (IsAuthenticated, )
     serializer_classes = {
         'update': UpdatePostSerializer,
         'partial_update': UpdatePostSerializer,

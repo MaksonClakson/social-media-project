@@ -79,3 +79,6 @@ class BlockSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"unblock_date": "You must specify either of the fields", "is_permanent": "You must specify either of the fields"})
         return data
+
+class UpdateImageSerializer(serializers.Serializer):
+    image_file = serializers.FileField()
