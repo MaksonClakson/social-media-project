@@ -114,9 +114,8 @@ class IsNotAuthenticated(permissions.BasePermission):
         return bool(request.user and not request.user.is_authenticated)
 
 
-class IsSelfUser(permissions.BasePermission):
+class IsCurrentUser(permissions.BasePermission):
     def has_permission(self, request, view):
-        print("IsSelfUser1")
         user = get_object_or_404(get_user_model(), pk=view.kwargs.get('pk'))
         if request.user and request.user.is_authenticated and request.user == user:
             return True

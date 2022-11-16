@@ -13,7 +13,7 @@ from rest_framework.decorators import action
 from rest_framework import status
 
 from api.models import Page
-from api.serializers.page_serializer import FollowRequestActionSerializer, PageSerializer, CreatePageSerializer, UpdatePageSerializer, PageAnonymousSerializer, AllFollowRequestActionSerializer, TagNameSerializer, BlockSerializer
+from api.serializers.page_serializer import FollowRequestActionSerializer, PageSerializer, CreatePageSerializer, UpdateImageSerializer, UpdatePageSerializer, PageAnonymousSerializer, AllFollowRequestActionSerializer, TagNameSerializer, BlockSerializer
 from api.serializers.post_serializer import PostSerializer
 from api.services import page_service as services
 from users.serializers import UserNameSerializer
@@ -99,6 +99,7 @@ class PageViewSet(mixins.RetrieveModelMixin,
         'add_tag': TagNameSerializer,
         'remove_tag': TagNameSerializer,
         'block': BlockSerializer,
+        'update_image': UpdateImageSerializer,
     }
     permissions = {
         'update': (IsPageOwner | IsAdmin | IsModerator,),
@@ -113,6 +114,8 @@ class PageViewSet(mixins.RetrieveModelMixin,
         'remove_tag': (IsPageOwner,),
         'block': (IsAdmin | IsModerator,),
         'unblock': (IsAdmin | IsModerator,),
+        'update_image': (IsPageOwner,),
+        'get_stat': (IsPageOwner,),
     }
     queryset = Page.objects.all()
 
@@ -245,10 +248,22 @@ class PageViewSet(mixins.RetrieveModelMixin,
         msg, _status = services.unblock(self.get_object())
         return Response({"message": msg}, _status)
 
+
     @action(detail=True, methods=['POST'])
+    def update_image(self, request, pk=None):
+        """
+        Provide updating image throw s3 buckets
+        """
+        serializer = self.get_serializer_class()(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer._errors, status=status.HTTP_400_BAD_REQUEST)
+        msg, _status = services.update_image(pk, request.FILES.get('image_uploaded'))
+        return Response({"message": msg}, _status)
+
+    @action(detail=True, methods=['GET'])
     def get_stat(self, request, pk=None):
         """
         Return statistic from microservice regarding certain page
         """
-        msg = services.get_stat(self.get_object())
-        return Response({"message": msg})
+        msg, _status = services.get_stat(self.get_object().pk, request.user)
+        return Response({"message": msg}, _status)

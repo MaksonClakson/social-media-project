@@ -63,6 +63,6 @@ drf_example
 volume
 
 # localstack folder
-.localstack
+localstack
 
 .qt_for_python

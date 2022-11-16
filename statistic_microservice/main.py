@@ -47,10 +47,9 @@ def create_page(page_id: int = Body(), user_id: int = Body(), page_name: str = B
 def update_page(page_id: int = Body(), user_id: int = Body(), page_name: str = Body()):
     """
     Perfroms updating page name of the page at the 'Pages' table
-    Request body:
-        :page_id - id of the page
-        :user_id - id of the current authenticated user
-        :page_name - new name of the page
+    :page_id - id of the page
+    :user_id - id of the current authenticated user
+    :page_name - new name of the page
     """
     content, _status = services.update_page(page_id, user_id, page_name)
     if _status != status.HTTP_200_OK:
@@ -76,8 +75,7 @@ def delete_page(page_id: int = Body(), user_id: int = Body()):
 def new_like(page_id: int = Body(embed=True)):
     """
     Perfroms adding like to page statistic
-    Request body:
-        :page_id - id of the page
+    :page_id - id of the page
     """
     content, _status = services.new_like(page_id)
     if _status != status.HTTP_200_OK:
@@ -89,8 +87,7 @@ def new_like(page_id: int = Body(embed=True)):
 def undo_like(page_id: int = Body(embed=True)):
     """
     Perfroms removing like from page statistic
-    Request body:
-        :page_id - id of the page
+    :page_id - id of the page
     """
     content, _status = services.undo_like(page_id)
     if _status != status.HTTP_200_OK:
@@ -102,8 +99,7 @@ def undo_like(page_id: int = Body(embed=True)):
 def new_follow_request(page_id: int = Body(embed=True)):
     """
     Perfroms adding new follow request to page statistic
-    Request body:
-        :page_id - id of the page
+    :page_id - id of the page
     """
     content, _status = services.new_follow_request(page_id)
     if _status != status.HTTP_200_OK:
@@ -115,8 +111,7 @@ def new_follow_request(page_id: int = Body(embed=True)):
 def undo_follow_request(page_id: int = Body(embed=True)):
     """
     Perfroms removing follow request from page statistic
-    Request body:
-        :page_id - id of the page
+    :page_id - id of the page
     """
     content, _status = services.undo_follow_request(page_id)
     if _status != status.HTTP_200_OK:
@@ -128,8 +123,7 @@ def undo_follow_request(page_id: int = Body(embed=True)):
 def new_follower(page_id: int = Body(embed=True)):
     """
     Perfroms adding new follower to page statistic
-    Request body:
-        :page_id - id of the page
+    :page_id - id of the page
     """
     content, _status = services.new_follower(page_id)
     if _status != status.HTTP_200_OK:
@@ -141,6 +135,7 @@ def new_follower(page_id: int = Body(embed=True)):
 def undo_follower(page_id: int = Body(embed=True)):
     """
     Perfroms removing follower from page statistic
+    :page_id - id of the page
     """
     content, _status = services.undo_follower(page_id)
     if _status != status.HTTP_200_OK:

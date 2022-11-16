@@ -119,7 +119,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
         serializer = self.get_serializer_class()(data=request.data)
         if not serializer.is_valid():
             return Response(serializer._errors, status=status.HTTP_400_BAD_REQUEST)
-        msg, _status = services.update_avatar(pk, request.data)
+        msg, _status = services.update_avatar(pk, request.FILES.get('image_uploaded'))
         return Response({"message": msg}, _status, request.user)
 
     @action(detail=True, methods=['POST'])
@@ -142,3 +142,11 @@ class UserViewSet(mixins.RetrieveModelMixin,
         queryset = services.mynews_posts(self.get_object())
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['POST'])
+    def verify_email(self, request, pk=None):
+        """
+        Verify user's email by sending message throw AWS SES
+        """
+        response = services.verify_email(request.user.email)
+        return Response({"message": response}, status=status.HTTP_200_OK)
