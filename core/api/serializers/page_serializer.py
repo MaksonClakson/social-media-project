@@ -49,7 +49,7 @@ class UpdatePageSerializer(serializers.ModelSerializer):
         fields = ('name', 'uuid', 'description', 'image', 'is_private', )
 
     def update(self, instance, validated_data):
-        page = page_update(instance, validated_data)
+        page = page_update(instance, validated_data, self.context["request"].user)
         return page
 
 

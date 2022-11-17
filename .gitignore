@@ -66,3 +66,5 @@ volume
 localstack
 
 .qt_for_python
+supervisord.log
+supervisord.pid

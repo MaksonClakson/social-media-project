@@ -25,6 +25,7 @@ RUN \
   apt-get update && apt-get upgrade -y \
   && apt-get install --no-install-recommends -y \
     curl \
+    supervisor \
   # Installing 'poetry' package manager:
   && curl -sSL 'https://install.python-poetry.org' | python - \
   && poetry --version
@@ -51,15 +52,15 @@ RUN poetry run pip install -U pip \
     $(if [ "$DJANGO_ENV" = 'production' ]; then echo '--no-dev'; fi) \
     --no-interaction --no-ansi --no-root
 
-# Run this script as an entry point:
-COPY ./scripts/entrypoint.sh /docker-entrypoint.sh
+ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-RUN chmod +x '/docker-entrypoint.sh'
+# Creating folders, and files for a project:
+COPY --chown=web:web . /code/
+
+RUN ["chmod", "+x", "/code/scripts/core-entrypoint.sh"]
+RUN ["chmod", "+x", "/code/scripts/celery-entrypoint.sh"]
 
 # Running as non-root user:
 USER web
 
-ENTRYPOINT [ "/docker-entrypoint.sh" ]
-
-# Creating folders, and files for a project:
-COPY --chown=web:web . /code/
+ENTRYPOINT [ "/usr/bin/supervisord" ]

@@ -23,10 +23,10 @@ class CreatePostSerializer(serializers.ModelSerializer):
         fields = ('page', 'content', 'reply_to')
 
     def create(self, validated_data):
-        response, _status = post_create_service(
-            validated_data, self['context'].user)
-        if _status is not status.HTTP_201_CREATED:
-            raise serializers.ValidationError(response)
+        response, err = post_create_service(
+            validated_data, self.context['request'].user)
+        if not response:
+            raise serializers.ValidationError(err)
         return response
 
 

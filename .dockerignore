@@ -24,3 +24,8 @@ web/media
 web/static/CACHE
 stats
 Dockerfile
+
+.bash_history
+.python_history
+supervisord.log
+supervisord.pid

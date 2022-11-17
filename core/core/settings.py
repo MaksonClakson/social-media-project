@@ -148,6 +148,11 @@ DJOSER = {
     'TOKEN_MODEL': None
 }
 
+
+# Celery configuration
+CELERY_BROKER_URL = 'redis://redis_innotter:6379'
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 

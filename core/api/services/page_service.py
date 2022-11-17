@@ -32,7 +32,10 @@ def page_create(validated_data, current_user):
     return page
 
 
-def page_update(instance, validated_data):
+def page_update(instance, validated_data, user):
+    if instance.is_permanent_block or instance.unblock_date != None:
+        if user.role != str(get_user_model().Roles.MODERATOR) and user.role != str(get_user_model().Roles.ADMIN):
+            raise NotFound(detail="Page is blocked", code=None)
     instance.name = validated_data["name"]
     instance.uuid = validated_data["uuid"]
     instance.description = validated_data["description"]
@@ -83,6 +86,7 @@ def subscribe(page_pk, user):
             return response, _status
         return "You have sent follow request to this page", status.HTTP_200_OK
     else:
+        page.followers.add(user)
         response = requests.post(
             f'http://{CONTAINER_MESSAGES_IP}/{CommandTypes.NEW_PAGE_FOLLOWER}/', data=json.dumps({'page_id': page.pk}))
         if str(response.status_code).startswith('4') or str(response.status_code).startswith('5'):

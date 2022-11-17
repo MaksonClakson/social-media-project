@@ -1,14 +1,12 @@
 import json
 import requests
 
-from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from django.db import connection, reset_queries
 from rest_framework import status
 from rest_framework.exceptions import NotFound
 
 from api.models import Post
-from api.tasks import notify_follower_about_new_post
+from api import tasks
 from core.producer import CommandTypes, CONTAINER_MESSAGES_IP
 
 
@@ -17,19 +15,18 @@ def post_list_service():
 
 
 def post_create_service(validated_data, user):
-    page_data = validated_data.pop('page')
-    reply_to_data = validated_data.pop('reply_to')
-    if page_data in user.pages:
-        return None
+    page = validated_data.pop('page')
+    reply_to = validated_data.pop('reply_to')
+    if page not in user.pages.all():
+        return None, "That is not your own page"
     post = Post.objects.create(
-        page=page_data, reply_to=reply_to_data, **validated_data
+        page=page, reply_to=reply_to, **validated_data
     )
+    for follower in page.followers.all():
+        tasks.notify_follower_about_new_post.delay(
+            page.name, post.content, follower.email)
 
-    for follower in page_data.followers.all():
-        response = notify_follower_about_new_post(
-            page_data.name, post.content, follower.email)
-
-    return post
+    return post, None
 
 
 def post_update_service(instance, validated_data):
